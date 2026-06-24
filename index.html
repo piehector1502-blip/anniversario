@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buon Anniversario</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0A1628; font-family: Georgia, serif; overflow-x: hidden; }
+
+  /* ── PAGINA 1: Fuochi ── */
+  #page1 {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  #fireworksCanvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  #wishText {
+    position: relative; z-index: 10;
+    text-align: center; color: white;
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: bold;
+    text-shadow: 0 0 20px rgba(255,200,100,0.8);
+    line-height: 1.4;
+    animation: fadeInUp 2s ease forwards;
+  }
+  #scrollHint {
+    position: absolute; bottom: 40px;
+    color: #AAAAAA; font-size: 16px;
+    animation: bounce 2s infinite;
+    z-index: 10; text-align: center;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+
+  /* ── PAGINA 2: Lettera ── */
+  #page2 {
+    min-height: 100vh; background: #0D0D0D;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px 30px;
+  }
+  #envelopeSection {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh;
+  }
+  #envelope {
+    width: 220px; height: 160px;
+    cursor: pointer; position: relative;
+    transition: transform 0.3s;
+    animation: shake 2s infinite 1s;
+  }
+  #envelope:hover { transform: scale(1.05); }
+  @keyframes shake {
+    0%,100% { transform: rotate(0deg); }
+    25%      { transform: rotate(-3deg); }
+    75%      { transform: rotate(3deg); }
+  }
+  #envelopeHint {
+    color: #888; font-size: 14px;
+    margin-top: 20px; text-align: center;
+  }
+  #letterSection {
+    display: none; flex-direction: column;
+    align-items: flex-start; max-width: 600px;
+    width: 100%;
+  }
+  #letterSection.visible { display: flex; animation: fadeInUp 0.8s ease; }
+  .section-title {
+    color: white; font-size: 24px;
+    margin-bottom: 20px; font-weight: bold;
+  }
+  #letterText {
+    color: #DDDDDD; font-size: 17px;
+    line-height: 1.8; white-space: pre-wrap;
+    width: 100%;
+  }
+
+  /* ── PAGINA 3: Canzoni ── */
+  #page3 {
+    min-height: 100vh; background: #0A0A0A;
+    padding: 60px 30px;
+    display: flex; flex-direction: column;
+    align-items: center;
+  }
+  .song-row {
+    display: flex; align-items: center;
+    background: #181818; border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 12px;
+    width: 100%; max-width: 600px;
+    gap: 16px;
+  }
+  .song-info { flex: 1; }
+  .song-title { color: white; font-size: 16px; font-weight: bold; }
+  .song-artist { color: #888; font-size: 13px; margin-top: 4px; }
+  .play-btn {
+    width: 44px; height: 44px;
+    background: #9C27B0; border: none;
+    border-radius: 50%; color: white;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .play-btn:hover { background: #7B1FA2; }
+  .play-btn.playing { background: #E91E63; }
+  #noSongs { color: #555; font-size: 15px; margin-top: 20px; }
+
+  /* ── PAGINA 4: Galleria ── */
+  #page4 {
+    min-height: 100vh; background: #0D0D0D;
+    padding: 60px 30px;
+    display: flex; flex-direction: column;
+    align-items: center;
+  }
+  #photoGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px; width: 100%; max-width: 600px;
+    margin-top: 20px;
+  }
+  #photoGrid img {
+    width: 100%; aspect-ratio: 1;
+    object-fit: cover; border-radius: 8px;
+  }
+  #noPhotos { color: #555; font-size: 15px; margin-top: 20px; }
+
+  /* ── Navigazione ── */
+  .nav-hint {
+    color: #444; font-size: 13px;
+    text-align: center; margin-bottom: 30px;
+    width: 100%;
+  }
+  .page-divider {
+    width: 100%; max-width: 600px;
+    height: 1px; background: #222;
+    margin: 40px auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- PAGINA 1: Fuochi d'artificio -->
+<div id="page1">
+  <canvas id="fireworksCanvas"></canvas>
+  <div id="wishText">
+    🎉 Buon Anniversario<br>
+    <span id="personName">Love</span>
+  </div>
+  <div id="scrollHint">↓ Scorri per vedere di più ↓</div>
+</div>
+
+<!-- PAGINA 2: Lettera -->
+<div id="page2">
+  <div id="envelopeSection">
+    <svg id="envelope" viewBox="0 0 220 160" onclick="openEnvelope()">
+      <!-- Corpo busta -->
+      <rect x="0" y="48" width="220" height="112" rx="4" fill="#F8BBD0"/>
+      <!-- Triangoli laterali -->
+      <polygon points="0,48 0,160 110,104" fill="#F48FB1" opacity="0.7"/>
+      <polygon points="220,48 220,160 110,104" fill="#F48FB1" opacity="0.7"/>
+      <!-- Flap superiore -->
+      <polygon id="envelopeFlap" points="0,48 110,120 220,48" fill="#F48FB1"/>
+      <!-- Bordi -->
+      <rect x="0" y="48" width="220" height="112" rx="4" fill="none" stroke="#F06292" stroke-width="2"/>
+      <!-- Cuore -->
+      <g id="heartIcon" transform="translate(110,100)">
+        <circle cx="-12" cy="0" r="12" fill="#E91E63"/>
+        <circle cx="12" cy="0" r="12" fill="#E91E63"/>
+        <polygon points="-24,0 0,28 24,0" fill="#E91E63"/>
+      </g>
+    </svg>
+    <p id="envelopeHint">Tocca la busta per aprirla 💌</p>
+  </div>
+
+  <div id="letterSection">
+    <p class="nav-hint">↑ Torna su</p>
+    <h2 class="section-title">💌 La mia lettera</h2>
+    <p id="letterText">Nessuna lettera ancora...</p>
+    <div class="page-divider"></div>
+  </div>
+</div>
+
+<!-- PAGINA 3: Canzoni -->
+<div id="page3">
+  <p class="nav-hint">↑ Torna alla lettera</p>
+  <h2 class="section-title" style="color:white;margin-bottom:24px;">🎵 Le nostre canzoni</h2>
+  <div id="songsContainer">
+    <p id="noSongs">Nessuna canzone aggiunta</p>
+  </div>
+  <div class="page-divider"></div>
+</div>
+
+<!-- PAGINA 4: Galleria -->
+<div id="page4">
+  <p class="nav-hint">↑ Torna alle canzoni</p>
+  <h2 class="section-title" style="color:white;margin-bottom:8px;">📸 Galleria</h2>
+  <div id="photoGrid">
+    <p id="noPhotos">Nessuna foto aggiunta</p>
+  </div>
+</div>
+
+<script>
+// ── CONFIGURAZIONE — modifica qui ──────────────────────────────────────────
+const CONFIG = {
+  name: "Love",        // ← cambia con il suo nome
+  letter: `Scrivi qui la tua lettera...
+
+Puoi andare a capo
+e scrivere quanto vuoi.`,
+  songs: [
+    // { title: "Nome canzone", artist: "Artista", url: "link_alla_canzone.mp3" },
+    // Aggiungi le tue canzoni qui
+  ],
+  photos: [
+    // "https://link-alla-foto-1.jpg",
+    // "https://link-alla-foto-2.jpg",
+    // Aggiungi i link alle tue foto qui
+  ]
+};
+// ──────────────────────────────────────────────────────────────────────────
+
+// Imposta nome e lettera
+document.getElementById("personName").textContent = CONFIG.name;
+document.getElementById("letterText").textContent = CONFIG.letter;
+
+// ── FUOCHI D'ARTIFICIO ────────────────────────────────────────────────────
+const canvas = document.getElementById("fireworksCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+const particles = [];
+const colors = ["#FF6B9D","#FFD700","#00BFFF","#FF4500","#ADFF2F","#FF69B4","#FFF"];
+
+function spawnBurst() {
+  const cx = Math.random() * canvas.width;
+  const cy = Math.random() * canvas.height * 0.6;
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  for (let i = 0; i < 70; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 8 + 2;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      alpha: 1, color,
+      radius: Math.random() * 3 + 1
+    });
+  }
+}
+
+function animateFireworks() {
+  ctx.fillStyle = "rgba(10,22,40,0.18)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy + 0.2;
+    p.alpha -= 0.013;
+    if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  if (Math.random() < 0.04) spawnBurst();
+  requestAnimationFrame(animateFireworks);
+}
+for (let i = 0; i < 5; i++) spawnBurst();
+animateFireworks();
+
+// ── BUSTA ─────────────────────────────────────────────────────────────────
+function openEnvelope() {
+  const flap = document.getElementById("envelopeFlap");
+  const heart = document.getElementById("heartIcon");
+  const hint = document.getElementById("envelopeHint");
+
+  flap.style.transition = "transform 0.6s ease";
+  flap.style.transformOrigin = "110px 48px";
+  flap.style.transform = "scaleY(-1)";
+  heart.style.transition = "opacity 0.3s";
+  heart.style.opacity = "0";
+  hint.textContent = "Apertura in corso...";
+
+  setTimeout(() => {
+    document.getElementById("envelopeSection").style.display = "none";
+    const ls = document.getElementById("letterSection");
+    ls.style.display = "flex";
+    ls.classList.add("visible");
+    window.scrollTo({ top: document.getElementById("page2").offsetTop, behavior: "smooth" });
+  }, 800);
+}
+
+// ── CANZONI ───────────────────────────────────────────────────────────────
+let currentAudio = null;
+let currentBtn = null;
+
+function loadSongs() {
+  const container = document.getElementById("songsContainer");
+  if (CONFIG.songs.length === 0) return;
+  document.getElementById("noSongs")?.remove();
+  CONFIG.songs.forEach((song, i) => {
+    const row = document.createElement("div");
+    row.className = "song-row";
+    row.innerHTML = `
+      <div class="song-info">
+        <div class="song-title">${song.title}</div>
+        <div class="song-artist">${song.artist}</div>
+      </div>
+      <button class="play-btn" id="playBtn${i}" onclick="togglePlay(${i})">▶</button>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function togglePlay(index) {
+  const btn = document.getElementById(`playBtn${index}`);
+  if (currentAudio && currentBtn === btn) {
+    if (currentAudio.paused) {
+      currentAudio.play();
+      btn.textContent = "⏸";
+      btn.classList.add("playing");
+    } else {
+      currentAudio.pause();
+      btn.textContent = "▶";
+      btn.classList.remove("playing");
+    }
+    return;
+  }
+  if (currentAudio) {
+    currentAudio.pause();
+    currentBtn.textContent = "▶";
+    currentBtn.classList.remove("playing");
+  }
+  currentAudio = new Audio(CONFIG.songs[index].url);
+  currentBtn = btn;
+  currentAudio.play();
+  btn.textContent = "⏸";
+  btn.classList.add("playing");
+  currentAudio.onended = () => {
+    btn.textContent = "▶";
+    btn.classList.remove("playing");
+  };
+}
+
+// ── FOTO ──────────────────────────────────────────────────────────────────
+function loadPhotos() {
+  const grid = document.getElementById("photoGrid");
+  if (CONFIG.photos.length === 0) return;
+  document.getElementById("noPhotos")?.remove();
+  CONFIG.photos.forEach(url => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Foto";
+    grid.appendChild(img);
+  });
+}
+
+loadSongs();
+loadPhotos();
+</script>
+</body>
+</html>
