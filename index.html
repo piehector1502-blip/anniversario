@@ -8,7 +8,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #0A1628; font-family: Georgia, serif; overflow-x: hidden; }
 
-  /* ── PAGINA 1: Fuochi ── */
   #page1 {
     width: 100vw; height: 100vh;
     display: flex; flex-direction: column;
@@ -43,7 +42,6 @@
     50%      { transform: translateY(-10px); }
   }
 
-  /* ── PAGINA 2: Lettera ── */
   #page2 {
     min-height: 100vh; background: #0D0D0D;
     display: flex; flex-direction: column;
@@ -87,7 +85,6 @@
     width: 100%;
   }
 
-  /* ── PAGINA 3: Canzoni ── */
   #page3 {
     min-height: 100vh; background: #0A0A0A;
     padding: 60px 30px;
@@ -117,7 +114,6 @@
   .play-btn.playing { background: #E91E63; }
   #noSongs { color: #555; font-size: 15px; margin-top: 20px; }
 
-  /* ── PAGINA 4: Galleria ── */
   #page4 {
     min-height: 100vh; background: #0D0D0D;
     padding: 60px 30px;
@@ -136,7 +132,6 @@
   }
   #noPhotos { color: #555; font-size: 15px; margin-top: 20px; }
 
-  /* ── Navigazione ── */
   .nav-hint {
     color: #444; font-size: 13px;
     text-align: center; margin-bottom: 30px;
@@ -151,7 +146,6 @@
 </head>
 <body>
 
-<!-- PAGINA 1: Fuochi d'artificio -->
 <div id="page1">
   <canvas id="fireworksCanvas"></canvas>
   <div id="wishText">
@@ -161,20 +155,14 @@
   <div id="scrollHint">↓ Scorri per vedere di più ↓</div>
 </div>
 
-<!-- PAGINA 2: Lettera -->
 <div id="page2">
   <div id="envelopeSection">
     <svg id="envelope" viewBox="0 0 220 160" onclick="openEnvelope()">
-      <!-- Corpo busta -->
       <rect x="0" y="48" width="220" height="112" rx="4" fill="#F8BBD0"/>
-      <!-- Triangoli laterali -->
       <polygon points="0,48 0,160 110,104" fill="#F48FB1" opacity="0.7"/>
       <polygon points="220,48 220,160 110,104" fill="#F48FB1" opacity="0.7"/>
-      <!-- Flap superiore -->
       <polygon id="envelopeFlap" points="0,48 110,120 220,48" fill="#F48FB1"/>
-      <!-- Bordi -->
       <rect x="0" y="48" width="220" height="112" rx="4" fill="none" stroke="#F06292" stroke-width="2"/>
-      <!-- Cuore -->
       <g id="heartIcon" transform="translate(110,100)">
         <circle cx="-12" cy="0" r="12" fill="#E91E63"/>
         <circle cx="12" cy="0" r="12" fill="#E91E63"/>
@@ -192,7 +180,6 @@
   </div>
 </div>
 
-<!-- PAGINA 3: Canzoni -->
 <div id="page3">
   <p class="nav-hint">↑ Torna alla lettera</p>
   <h2 class="section-title" style="color:white;margin-bottom:24px;">🎵 Le nostre canzoni</h2>
@@ -202,7 +189,6 @@
   <div class="page-divider"></div>
 </div>
 
-<!-- PAGINA 4: Galleria -->
 <div id="page4">
   <p class="nav-hint">↑ Torna alle canzoni</p>
   <h2 class="section-title" style="color:white;margin-bottom:8px;">📸 Galleria</h2>
@@ -212,28 +198,40 @@
 </div>
 
 <script>
-// ── CONFIGURAZIONE — modifica qui ──────────────────────────────────────────
+// ── CONFIGURAZIONE ─────────────────────────────────────────────────────────
 const CONFIG = {
-  name: "Love",        // ← cambia con il suo nome
-  letter: `Scrivi qui la tua lettera...
-
-Puoi andare a capo
-e scrivere quanto vuoi.`,
+  name: "Love",
+  letter: `Scrivi qui la tua lettera...`,
   songs: [
-    // { title: "Nome canzone", artist: "Artista", url: "link_alla_canzone.mp3" },
-    // Aggiungi le tue canzoni qui
+    // { title: "Nome canzone", artist: "Artista", url: "link.mp3" },
   ],
   photos: [
-    // "https://link-alla-foto-1.jpg",
-    // "https://link-alla-foto-2.jpg",
-    // Aggiungi i link alle tue foto qui
+    // "https://link-foto.jpg",
   ]
 };
 // ──────────────────────────────────────────────────────────────────────────
 
-// Imposta nome e lettera
+const DB_URL = "https://myapp-a9500-default-rtdb.europe-west1.firebasedatabase.app";
+
 document.getElementById("personName").textContent = CONFIG.name;
 document.getElementById("letterText").textContent = CONFIG.letter;
+
+// ── TRACCIAMENTO APERTURA LINK ─────────────────────────────────────────────
+function trackLinkOpen() {
+  const timestamp = new Date().toLocaleString("it-IT");
+  const device = navigator.userAgent.substring(0, 80);
+  const key = "web_" + Date.now();
+  fetch(`${DB_URL}/accessi/link/${key}.json`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "link",
+      device: device,
+      timestamp: timestamp
+    })
+  });
+}
+trackLinkOpen();
 
 // ── FUOCHI D'ARTIFICIO ────────────────────────────────────────────────────
 const canvas = document.getElementById("fireworksCanvas");
@@ -291,14 +289,12 @@ function openEnvelope() {
   const flap = document.getElementById("envelopeFlap");
   const heart = document.getElementById("heartIcon");
   const hint = document.getElementById("envelopeHint");
-
   flap.style.transition = "transform 0.6s ease";
   flap.style.transformOrigin = "110px 48px";
   flap.style.transform = "scaleY(-1)";
   heart.style.transition = "opacity 0.3s";
   heart.style.opacity = "0";
   hint.textContent = "Apertura in corso...";
-
   setTimeout(() => {
     document.getElementById("envelopeSection").style.display = "none";
     const ls = document.getElementById("letterSection");
@@ -334,30 +330,20 @@ function togglePlay(index) {
   const btn = document.getElementById(`playBtn${index}`);
   if (currentAudio && currentBtn === btn) {
     if (currentAudio.paused) {
-      currentAudio.play();
-      btn.textContent = "⏸";
-      btn.classList.add("playing");
+      currentAudio.play(); btn.textContent = "⏸"; btn.classList.add("playing");
     } else {
-      currentAudio.pause();
-      btn.textContent = "▶";
-      btn.classList.remove("playing");
+      currentAudio.pause(); btn.textContent = "▶"; btn.classList.remove("playing");
     }
     return;
   }
   if (currentAudio) {
-    currentAudio.pause();
-    currentBtn.textContent = "▶";
-    currentBtn.classList.remove("playing");
+    currentAudio.pause(); currentBtn.textContent = "▶"; currentBtn.classList.remove("playing");
   }
   currentAudio = new Audio(CONFIG.songs[index].url);
   currentBtn = btn;
   currentAudio.play();
-  btn.textContent = "⏸";
-  btn.classList.add("playing");
-  currentAudio.onended = () => {
-    btn.textContent = "▶";
-    btn.classList.remove("playing");
-  };
+  btn.textContent = "⏸"; btn.classList.add("playing");
+  currentAudio.onended = () => { btn.textContent = "▶"; btn.classList.remove("playing"); };
 }
 
 // ── FOTO ──────────────────────────────────────────────────────────────────
@@ -367,8 +353,7 @@ function loadPhotos() {
   document.getElementById("noPhotos")?.remove();
   CONFIG.photos.forEach(url => {
     const img = document.createElement("img");
-    img.src = url;
-    img.alt = "Foto";
+    img.src = url; img.alt = "Foto";
     grid.appendChild(img);
   });
 }
