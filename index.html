@@ -218,18 +218,21 @@ document.getElementById("letterText").textContent = CONFIG.letter;
 
 // ── TRACCIAMENTO APERTURA LINK ─────────────────────────────────────────────
 function trackLinkOpen() {
-  const timestamp = new Date().toLocaleString("it-IT");
-  const device = navigator.userAgent.substring(0, 80);
-  const key = "web_" + Date.now();
-  fetch(`${DB_URL}/accessi/link/${key}.json`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      type: "link",
-      device: device,
-      timestamp: timestamp
-    })
-  });
+    const timestamp = new Date().toLocaleString("it-IT");
+    const device = navigator.userAgent.substring(0, 80);
+    const key = "web_" + Date.now();
+    
+    fetch("https://firestore.googleapis.com/v1/projects/myapp-a9500/databases/(default)/documents/accessi/link/aperture/" + key, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            fields: {
+                type: { stringValue: "link" },
+                device: { stringValue: device },
+                timestamp: { stringValue: timestamp }
+            }
+        })
+    });
 }
 trackLinkOpen();
 
