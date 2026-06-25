@@ -214,96 +214,141 @@ const CONFIG = {
 document.getElementById("personName").textContent = CONFIG.name;
 document.getElementById("letterText").textContent = CONFIG.letter;
 
-// ── TRACCIAMENTO LINK (entrata + uscita + deviceInfo) ─────────────────────
+// ── TRACCIAMENTO LINK — massimo delle info ────────────────────────────────
 const FIRESTORE_BASE = "https://firestore.googleapis.com/v1/projects/myapp-a9500/databases/(default)/documents";
 
-// Genera un ID visita unico e persistente per questa sessione
+// ID univoco per questa visita
 const visitId = "web_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
 
-// Riconosce il tipo di dispositivo/browser dall'userAgent
-function getDeviceInfo() {
+// Estrae il massimo possibile dall'userAgent + API browser
+function buildDeviceInfo() {
   const ua = navigator.userAgent;
-  let device = "Sconosciuto";
 
-  if (/iPhone/.test(ua))        device = "iPhone";
-  else if (/iPad/.test(ua))     device = "iPad";
-  else if (/Android/.test(ua)) {
-    const model = ua.match(/Android [^;]+;([^)]+)/);
-    device = "Android" + (model ? " — " + model[1].trim() : "");
+  // ── Tipo dispositivo ──────────────────────────────────────────────────
+  let tipo = "Desktop";
+  if (/iPad|Tablet/.test(ua))                              tipo = "Tablet";
+  else if (/Mobi|Android|iPhone/.test(ua))                 tipo = "Mobile";
+
+  // ── Marca (solo Android la espone parzialmente) ───────────────────────
+  let brand = "";
+  if      (/iPhone|iPad/.test(ua))        brand = "Apple";
+  else if (/SamsungBrowser|Samsung/.test(ua)) brand = "Samsung";
+  else if (/Xiaomi|MIUI/.test(ua))        brand = "Xiaomi";
+  else if (/Huawei|HUAWEI/.test(ua))      brand = "Huawei";
+  else if (/OPPO/.test(ua))               brand = "OPPO";
+  else if (/vivo/.test(ua))               brand = "Vivo";
+  else if (/OnePlus/.test(ua))            brand = "OnePlus";
+  else if (/Motorola|moto/i.test(ua))     brand = "Motorola";
+  else if (/Nokia/.test(ua))              brand = "Nokia";
+  else if (/LG/.test(ua))                 brand = "LG";
+  else if (/Sony/.test(ua))               brand = "Sony";
+
+  // Modello grezzo da Android userAgent (es. "SM-G991B", "Redmi Note 12")
+  const modelMatch = ua.match(/Android[^;]*;\s*([^)]+)\)/);
+  const modelRaw = modelMatch ? modelMatch[1].trim() : "";
+
+  // ── Sistema operativo + versione ──────────────────────────────────────
+  let os = "Sconosciuto";
+  let osVersion = "";
+  const androidMatch = ua.match(/Android (\d+(\.\d+)?)/);
+  const iosMatch     = ua.match(/OS (\d+[_\.]\d+)/);
+  const winMatch     = ua.match(/Windows NT (\d+\.\d+)/);
+  if (androidMatch) {
+    os = "Android"; osVersion = androidMatch[1];
+  } else if (/iPhone|iPad/.test(ua) && iosMatch) {
+    os = /iPad/.test(ua) ? "iPadOS" : "iOS";
+    osVersion = iosMatch[1].replace(/_/g, ".");
+  } else if (winMatch) {
+    os = "Windows";
+    const ntMap = {"10.0":"10/11","6.3":"8.1","6.2":"8","6.1":"7"};
+    osVersion = ntMap[winMatch[1]] || winMatch[1];
+  } else if (/Macintosh/.test(ua)) {
+    os = "macOS";
+    const macMatch = ua.match(/Mac OS X (\d+[_\.]\d+)/);
+    if (macMatch) osVersion = macMatch[1].replace(/_/g, ".");
+  } else if (/Linux/.test(ua)) {
+    os = "Linux";
   }
-  else if (/Windows/.test(ua))  device = "Windows PC";
-  else if (/Macintosh/.test(ua)) device = "Mac";
-  else if (/Linux/.test(ua))    device = "Linux";
 
-  // Aggiunge il browser
-  let browser = "";
-  if (/Chrome\//.test(ua) && !/Chromium|Edge/.test(ua)) browser = "Chrome";
-  else if (/Firefox\//.test(ua))  browser = "Firefox";
-  else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
-  else if (/Edge\//.test(ua))     browser = "Edge";
-  else if (/SamsungBrowser/.test(ua)) browser = "Samsung Browser";
+  // ── Browser + versione ────────────────────────────────────────────────
+  let browser = "Sconosciuto";
+  let browserVersion = "";
+  if (/SamsungBrowser\/([\d.]+)/.test(ua)) {
+    browser = "Samsung Browser"; browserVersion = RegExp.$1;
+  } else if (/OPR\/([\d.]+)/.test(ua)) {
+    browser = "Opera"; browserVersion = RegExp.$1;
+  } else if (/Edg\/([\d.]+)/.test(ua)) {
+    browser = "Edge"; browserVersion = RegExp.$1;
+  } else if (/Firefox\/([\d.]+)/.test(ua)) {
+    browser = "Firefox"; browserVersion = RegExp.$1;
+  } else if (/Chrome\/([\d.]+)/.test(ua)) {
+    browser = "Chrome"; browserVersion = RegExp.$1.split(".")[0];
+  } else if (/Safari\/([\d.]+)/.test(ua) && /Version\/([\d.]+)/.test(ua)) {
+    browser = "Safari"; browserVersion = ua.match(/Version\/([\d.]+)/)[1];
+  }
 
-  return browser ? device + " · " + browser : device;
+  // ── Lingua browser ────────────────────────────────────────────────────
+  const lingua = navigator.language || navigator.userLanguage || "";
+
+  // ── Risoluzione schermo ───────────────────────────────────────────────
+  const schermo = `${screen.width}×${screen.height} (ratio ${window.devicePixelRatio || 1}x)`;
+
+  // ── Fuso orario ───────────────────────────────────────────────────────
+  const fuso = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+  // ── Label sintetica per il dialog admin ──────────────────────────────
+  const brandLabel = brand ? brand + " · " : "";
+  const modelLabel = modelRaw && modelRaw !== brand ? modelRaw + " · " : "";
+  const deviceInfo = `${tipo} · ${brandLabel}${modelLabel}${os}${osVersion ? " " + osVersion : ""} · ${browser}${browserVersion ? " " + browserVersion : ""}`;
+
+  return { tipo, brand, model: modelRaw, os, osVersion, browser, browserVersion,
+           lingua, schermo, fuso, deviceInfo,
+           userAgent: ua.substring(0, 250) };
 }
 
-// Salva entrata su Firestore con serverTimestamp simulato (ora locale ISO)
 async function trackLinkOpen() {
-  const deviceInfo = getDeviceInfo();
-  const userAgent  = navigator.userAgent.substring(0, 200);
+  const info = buildDeviceInfo();
+  const fields = {};
+  for (const [k, v] of Object.entries(info)) {
+    fields[k] = { stringValue: v };
+  }
+  fields["entrata"] = { stringValue: new Date().toISOString() };
+  fields["uscita"]  = { nullValue: null };
 
   try {
     await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fields: {
-          deviceInfo: { stringValue: deviceInfo },
-          userAgent:  { stringValue: userAgent },
-          entrata:    { stringValue: new Date().toISOString() },
-          uscita:     { nullValue: null }
-        }
-      })
+      body: JSON.stringify({ fields })
     });
   } catch (e) {
     console.warn("Tracciamento entrata fallito:", e);
   }
 }
 
-// Salva uscita su Firestore quando l'utente lascia/chiude la pagina
 async function trackLinkClose() {
   try {
-    // Usa sendBeacon per garantire invio anche durante unload
-    const body = JSON.stringify({
-      fields: {
-        uscita: { stringValue: new Date().toISOString() }
+    await fetch(
+      `${FIRESTORE_BASE}/accessi/link/aperture/${visitId}?updateMask.fieldPaths=uscita`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: { uscita: { stringValue: new Date().toISOString() } } }),
+        keepalive: true   // funziona anche a pagina chiusa
       }
-    });
-    // PATCH tramite fetch (funziona su visibilitychange)
-    await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}?updateMask.fieldPaths=uscita`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: body,
-      // keepalive: true permette di completare la richiesta anche a pagina chiusa
-      keepalive: true
-    });
+    );
   } catch (e) {
     console.warn("Tracciamento uscita fallito:", e);
   }
 }
 
-// Ascolta quando la pagina diventa nascosta (chiusura, cambio tab, torna indietro)
+// Chiusura/cambio tab
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") {
-    trackLinkClose();
-  }
+  if (document.visibilityState === "hidden") trackLinkClose();
 });
+// Più affidabile su iOS Safari
+window.addEventListener("pagehide", () => trackLinkClose());
 
-// Ascolta anche pagehide (più affidabile su iOS Safari)
-window.addEventListener("pagehide", () => {
-  trackLinkClose();
-});
-
-// Avvia tracciamento all'apertura
 trackLinkOpen();
 // ──────────────────────────────────────────────────────────────────────────
 
