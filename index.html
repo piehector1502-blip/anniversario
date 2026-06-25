@@ -211,30 +211,101 @@ const CONFIG = {
 };
 // ──────────────────────────────────────────────────────────────────────────
 
-const DB_URL = "https://myapp-a9500-default-rtdb.europe-west1.firebasedatabase.app";
-
 document.getElementById("personName").textContent = CONFIG.name;
 document.getElementById("letterText").textContent = CONFIG.letter;
 
-// ── TRACCIAMENTO APERTURA LINK ─────────────────────────────────────────────
-function trackLinkOpen() {
-    const timestamp = new Date().toLocaleString("it-IT");
-    const device = navigator.userAgent.substring(0, 80);
-    const key = "web_" + Date.now();
-    
-    fetch("https://firestore.googleapis.com/v1/projects/myapp-a9500/databases/(default)/documents/accessi/link/aperture/" + key, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            fields: {
-                type: { stringValue: "link" },
-                device: { stringValue: device },
-                timestamp: { stringValue: timestamp }
-            }
-        })
-    });
+// ── TRACCIAMENTO LINK (entrata + uscita + deviceInfo) ─────────────────────
+const FIRESTORE_BASE = "https://firestore.googleapis.com/v1/projects/myapp-a9500/databases/(default)/documents";
+
+// Genera un ID visita unico e persistente per questa sessione
+const visitId = "web_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+
+// Riconosce il tipo di dispositivo/browser dall'userAgent
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+  let device = "Sconosciuto";
+
+  if (/iPhone/.test(ua))        device = "iPhone";
+  else if (/iPad/.test(ua))     device = "iPad";
+  else if (/Android/.test(ua)) {
+    const model = ua.match(/Android [^;]+;([^)]+)/);
+    device = "Android" + (model ? " — " + model[1].trim() : "");
+  }
+  else if (/Windows/.test(ua))  device = "Windows PC";
+  else if (/Macintosh/.test(ua)) device = "Mac";
+  else if (/Linux/.test(ua))    device = "Linux";
+
+  // Aggiunge il browser
+  let browser = "";
+  if (/Chrome\//.test(ua) && !/Chromium|Edge/.test(ua)) browser = "Chrome";
+  else if (/Firefox\//.test(ua))  browser = "Firefox";
+  else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
+  else if (/Edge\//.test(ua))     browser = "Edge";
+  else if (/SamsungBrowser/.test(ua)) browser = "Samsung Browser";
+
+  return browser ? device + " · " + browser : device;
 }
+
+// Salva entrata su Firestore con serverTimestamp simulato (ora locale ISO)
+async function trackLinkOpen() {
+  const deviceInfo = getDeviceInfo();
+  const userAgent  = navigator.userAgent.substring(0, 200);
+
+  try {
+    await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fields: {
+          deviceInfo: { stringValue: deviceInfo },
+          userAgent:  { stringValue: userAgent },
+          entrata:    { stringValue: new Date().toISOString() },
+          uscita:     { nullValue: null }
+        }
+      })
+    });
+  } catch (e) {
+    console.warn("Tracciamento entrata fallito:", e);
+  }
+}
+
+// Salva uscita su Firestore quando l'utente lascia/chiude la pagina
+async function trackLinkClose() {
+  try {
+    // Usa sendBeacon per garantire invio anche durante unload
+    const body = JSON.stringify({
+      fields: {
+        uscita: { stringValue: new Date().toISOString() }
+      }
+    });
+    // PATCH tramite fetch (funziona su visibilitychange)
+    await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}?updateMask.fieldPaths=uscita`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: body,
+      // keepalive: true permette di completare la richiesta anche a pagina chiusa
+      keepalive: true
+    });
+  } catch (e) {
+    console.warn("Tracciamento uscita fallito:", e);
+  }
+}
+
+// Ascolta quando la pagina diventa nascosta (chiusura, cambio tab, torna indietro)
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    trackLinkClose();
+  }
+});
+
+// Ascolta anche pagehide (più affidabile su iOS Safari)
+window.addEventListener("pagehide", () => {
+  trackLinkClose();
+});
+
+// Avvia tracciamento all'apertura
 trackLinkOpen();
+// ──────────────────────────────────────────────────────────────────────────
 
 // ── FUOCHI D'ARTIFICIO ────────────────────────────────────────────────────
 const canvas = document.getElementById("fireworksCanvas");
