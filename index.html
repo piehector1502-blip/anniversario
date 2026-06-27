@@ -2,157 +2,128 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Buon Anniversario</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0A1628; font-family: Georgia, serif; overflow-x: hidden; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0A1628; font-family:Georgia,serif; overflow-x:hidden; }
 
-  #page1 {
-    width: 100vw; height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
-  }
-  #fireworksCanvas {
-    position: absolute; top: 0; left: 0;
-    width: 100%; height: 100%;
-  }
-  #wishText {
-    position: relative; z-index: 10;
-    text-align: center; color: white;
-    font-size: clamp(28px, 6vw, 48px);
-    font-weight: bold;
-    text-shadow: 0 0 20px rgba(255,200,100,0.8);
-    line-height: 1.4;
-    animation: fadeInUp 2s ease forwards;
-  }
-  #scrollHint {
-    position: absolute; bottom: 40px;
-    color: #AAAAAA; font-size: 16px;
-    animation: bounce 2s infinite;
-    z-index: 10; text-align: center;
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes bounce {
-    0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(-10px); }
-  }
+/* ── PAGINA 1 scena ── */
+#page1 {
+  width:100vw; height:100vh;
+  position:relative; overflow:hidden;
+}
+#sceneCanvas {
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+}
+#fireworksCanvas {
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+  display:none;
+}
+#helicopterCanvas {
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+  display:none;
+}
 
-  #page2 {
-    min-height: 100vh; background: #0D0D0D;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 60px 30px;
-  }
-  #envelopeSection {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    min-height: 100vh;
-  }
-  #envelope {
-    width: 220px; height: 160px;
-    cursor: pointer; position: relative;
-    transition: transform 0.3s;
-    animation: shake 2s infinite 1s;
-  }
-  #envelope:hover { transform: scale(1.05); }
-  @keyframes shake {
-    0%,100% { transform: rotate(0deg); }
-    25%      { transform: rotate(-3deg); }
-    75%      { transform: rotate(3deg); }
-  }
-  #envelopeHint {
-    color: #888; font-size: 14px;
-    margin-top: 20px; text-align: center;
-  }
-  #letterSection {
-    display: none; flex-direction: column;
-    align-items: flex-start; max-width: 600px;
-    width: 100%;
-  }
-  #letterSection.visible { display: flex; animation: fadeInUp 0.8s ease; }
-  .section-title {
-    color: white; font-size: 24px;
-    margin-bottom: 20px; font-weight: bold;
-  }
-  #letterText {
-    color: #DDDDDD; font-size: 17px;
-    line-height: 1.8; white-space: pre-wrap;
-    width: 100%;
-  }
+/* Nuvolette fumetto */
+#bubbleLeft, #bubbleRight {
+  position:absolute;
+  max-width:160px;
+  padding:10px 14px;
+  border-radius:16px;
+  font-size:14px;
+  font-weight:bold;
+  color:white;
+  line-height:1.4;
+  display:none;
+  z-index:20;
+  word-break:break-word;
+}
+#bubbleLeft {
+  background:rgba(26,42,74,0.92);
+  border:1px solid rgba(255,255,255,0.2);
+  bottom:310px; left:20px;
+  border-bottom-left-radius:4px;
+}
+#bubbleLeft::after {
+  content:'';
+  position:absolute;
+  bottom:-14px; right:16px;
+  border:8px solid transparent;
+  border-top-color:rgba(26,42,74,0.92);
+}
+#bubbleRight {
+  background:rgba(58,26,74,0.92);
+  border:1px solid rgba(255,255,255,0.2);
+  bottom:310px; right:20px;
+  border-bottom-right-radius:4px;
+}
+#bubbleRight::after {
+  content:'';
+  position:absolute;
+  bottom:-14px; left:16px;
+  border:8px solid transparent;
+  border-top-color:rgba(58,26,74,0.92);
+}
 
-  #page3 {
-    min-height: 100vh; background: #0A0A0A;
-    padding: 60px 30px;
-    display: flex; flex-direction: column;
-    align-items: center;
-  }
-  .song-row {
-    display: flex; align-items: center;
-    background: #181818; border-radius: 12px;
-    padding: 16px 20px; margin-bottom: 12px;
-    width: 100%; max-width: 600px;
-    gap: 16px;
-  }
-  .song-info { flex: 1; }
-  .song-title { color: white; font-size: 16px; font-weight: bold; }
-  .song-artist { color: #888; font-size: 13px; margin-top: 4px; }
-  .play-btn {
-    width: 44px; height: 44px;
-    background: #9C27B0; border: none;
-    border-radius: 50%; color: white;
-    font-size: 18px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
-    flex-shrink: 0;
-  }
-  .play-btn:hover { background: #7B1FA2; }
-  .play-btn.playing { background: #E91E63; }
-  #noSongs { color: #555; font-size: 15px; margin-top: 20px; }
+#wishText {
+  position:absolute;
+  top:120px; left:0; right:0;
+  text-align:center;
+  color:#FFD700;
+  font-size:clamp(24px,6vw,40px);
+  font-weight:bold;
+  text-shadow:0 0 30px #FF8C00, 0 0 60px #FF6600;
+  line-height:1.4;
+  z-index:15;
+  display:none;
+}
+#scrollHint {
+  position:absolute; bottom:24px; left:0; right:0;
+  color:#666; font-size:11px;
+  text-align:center; z-index:10;
+  display:none;
+}
 
-  #page4 {
-    min-height: 100vh; background: #0D0D0D;
-    padding: 60px 30px;
-    display: flex; flex-direction: column;
-    align-items: center;
-  }
-  #photoGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px; width: 100%; max-width: 600px;
-    margin-top: 20px;
-  }
-  #photoGrid img {
-    width: 100%; aspect-ratio: 1;
-    object-fit: cover; border-radius: 8px;
-  }
-  #noPhotos { color: #555; font-size: 15px; margin-top: 20px; }
-
-  .nav-hint {
-    color: #444; font-size: 13px;
-    text-align: center; margin-bottom: 30px;
-    width: 100%;
-  }
-  .page-divider {
-    width: 100%; max-width: 600px;
-    height: 1px; background: #222;
-    margin: 40px auto;
-  }
+/* ── PAGINE 2-4 ── */
+#page2 { min-height:100vh; background:#0D0D0D; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 30px; }
+#envelopeSection { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; }
+#envelope { width:220px; height:160px; cursor:pointer; transition:transform 0.3s; animation:shake 2s infinite 1s; }
+#envelope:hover { transform:scale(1.05); }
+@keyframes shake { 0%,100%{transform:rotate(0deg)} 25%{transform:rotate(-3deg)} 75%{transform:rotate(3deg)} }
+#envelopeHint { color:#888; font-size:14px; margin-top:20px; text-align:center; }
+#letterSection { display:none; flex-direction:column; align-items:flex-start; max-width:600px; width:100%; }
+#letterSection.visible { display:flex; animation:fadeInUp 0.8s ease; }
+.section-title { color:white; font-size:24px; margin-bottom:20px; font-weight:bold; }
+#letterText { color:#DDD; font-size:17px; line-height:1.8; white-space:pre-wrap; width:100%; }
+#page3 { min-height:100vh; background:#0A0A0A; padding:60px 30px; display:flex; flex-direction:column; align-items:center; }
+.song-row { display:flex; align-items:center; background:#181818; border-radius:12px; padding:16px 20px; margin-bottom:12px; width:100%; max-width:600px; gap:16px; }
+.song-info { flex:1; }
+.song-title { color:white; font-size:16px; font-weight:bold; }
+.song-artist { color:#888; font-size:13px; margin-top:4px; }
+.play-btn { width:44px; height:44px; background:#9C27B0; border:none; border-radius:50%; color:white; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.play-btn.playing { background:#E91E63; }
+#page4 { min-height:100vh; background:#0D0D0D; padding:60px 30px; display:flex; flex-direction:column; align-items:center; }
+#photoGrid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; width:100%; max-width:600px; margin-top:20px; }
+#photoGrid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; }
+.nav-hint { color:#444; font-size:13px; text-align:center; margin-bottom:30px; width:100%; }
+.page-divider { width:100%; max-width:600px; height:1px; background:#222; margin:40px auto; }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
 
 <div id="page1">
+  <canvas id="sceneCanvas"></canvas>
   <canvas id="fireworksCanvas"></canvas>
-  <div id="wishText">
-    🎉 Buon Anniversario<br>
-    <span id="personName">Love</span>
-  </div>
-  <div id="scrollHint">↓ Scorri per vedere di più ↓</div>
+  <canvas id="helicopterCanvas"></canvas>
+  <div id="bubbleLeft"></div>
+  <div id="bubbleRight"></div>
+  <div id="wishText">Buon Anniversario<br><span id="personName">Love</span></div>
+  <div id="scrollHint">↓ scorri per vedere di più ↓</div>
 </div>
 
 <div id="page2">
@@ -163,15 +134,9 @@
       <polygon points="220,48 220,160 110,104" fill="#F48FB1" opacity="0.7"/>
       <polygon id="envelopeFlap" points="0,48 110,120 220,48" fill="#F48FB1"/>
       <rect x="0" y="48" width="220" height="112" rx="4" fill="none" stroke="#F06292" stroke-width="2"/>
-      <g id="heartIcon" transform="translate(110,100)">
-        <circle cx="-12" cy="0" r="12" fill="#E91E63"/>
-        <circle cx="12" cy="0" r="12" fill="#E91E63"/>
-        <polygon points="-24,0 0,28 24,0" fill="#E91E63"/>
-      </g>
     </svg>
     <p id="envelopeHint">Tocca la busta per aprirla 💌</p>
   </div>
-
   <div id="letterSection">
     <p class="nav-hint">↑ Torna su</p>
     <h2 class="section-title">💌 La mia lettera</h2>
@@ -182,25 +147,24 @@
 
 <div id="page3">
   <p class="nav-hint">↑ Torna alla lettera</p>
-  <h2 class="section-title" style="color:white;margin-bottom:24px;">🎵 Le nostre canzoni</h2>
-  <div id="songsContainer">
-    <p id="noSongs">Nessuna canzone aggiunta</p>
-  </div>
+  <h2 class="section-title">🎵 Le nostre canzoni</h2>
+  <div id="songsContainer"><p id="noSongs" style="color:#555;font-size:15px;margin-top:20px;">Nessuna canzone aggiunta</p></div>
   <div class="page-divider"></div>
 </div>
 
 <div id="page4">
   <p class="nav-hint">↑ Torna alle canzoni</p>
-  <h2 class="section-title" style="color:white;margin-bottom:8px;">📸 Galleria</h2>
-  <div id="photoGrid">
-    <p id="noPhotos">Nessuna foto aggiunta</p>
-  </div>
+  <h2 class="section-title">📸 Galleria</h2>
+  <div id="photoGrid"><p id="noPhotos" style="color:#555;font-size:15px;margin-top:20px;">Nessuna foto aggiunta</p></div>
 </div>
 
 <script>
-// ── CONFIGURAZIONE ─────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// CONFIGURAZIONE — modifica solo questa sezione
+// ══════════════════════════════════════════════════════════
 const CONFIG = {
   name: "Love",
+  bannerText: "Buon Anniversario Amore",
   letter: `Scrivi qui la tua lettera...`,
   songs: [
     // { title: "Nome canzone", artist: "Artista", url: "link.mp3" },
@@ -209,276 +173,432 @@ const CONFIG = {
     // "https://link-foto.jpg",
   ]
 };
-// ──────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
 
 document.getElementById("personName").textContent = CONFIG.name;
 document.getElementById("letterText").textContent = CONFIG.letter;
 
-// ── TRACCIAMENTO LINK — massimo delle info ────────────────────────────────
+// ── TRACCIAMENTO ─────────────────────────────────────────
 const FIRESTORE_BASE = "https://firestore.googleapis.com/v1/projects/myapp-a9500/databases/(default)/documents";
-
-// ID univoco per questa visita
-const visitId = "web_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
-
-// Estrae il massimo possibile dall'userAgent + API browser
+const visitId = "web_" + Date.now() + "_" + Math.random().toString(36).substr(2,6);
 function buildDeviceInfo() {
   const ua = navigator.userAgent;
-
-  // ── Tipo dispositivo ──────────────────────────────────────────────────
-  let tipo = "Desktop";
-  if (/iPad|Tablet/.test(ua))                              tipo = "Tablet";
-  else if (/Mobi|Android|iPhone/.test(ua))                 tipo = "Mobile";
-
-  // ── Marca (solo Android la espone parzialmente) ───────────────────────
-  let brand = "";
-  if      (/iPhone|iPad/.test(ua))        brand = "Apple";
-  else if (/SamsungBrowser|Samsung/.test(ua)) brand = "Samsung";
-  else if (/Xiaomi|MIUI/.test(ua))        brand = "Xiaomi";
-  else if (/Huawei|HUAWEI/.test(ua))      brand = "Huawei";
-  else if (/OPPO/.test(ua))               brand = "OPPO";
-  else if (/vivo/.test(ua))               brand = "Vivo";
-  else if (/OnePlus/.test(ua))            brand = "OnePlus";
-  else if (/Motorola|moto/i.test(ua))     brand = "Motorola";
-  else if (/Nokia/.test(ua))              brand = "Nokia";
-  else if (/LG/.test(ua))                 brand = "LG";
-  else if (/Sony/.test(ua))               brand = "Sony";
-
-  // Modello grezzo da Android userAgent (es. "SM-G991B", "Redmi Note 12")
-  const modelMatch = ua.match(/Android[^;]*;\s*([^)]+)\)/);
-  const modelRaw = modelMatch ? modelMatch[1].trim() : "";
-
-  // ── Sistema operativo + versione ──────────────────────────────────────
-  let os = "Sconosciuto";
-  let osVersion = "";
-  const androidMatch = ua.match(/Android (\d+(\.\d+)?)/);
-  const iosMatch     = ua.match(/OS (\d+[_\.]\d+)/);
-  const winMatch     = ua.match(/Windows NT (\d+\.\d+)/);
-  if (androidMatch) {
-    os = "Android"; osVersion = androidMatch[1];
-  } else if (/iPhone|iPad/.test(ua) && iosMatch) {
-    os = /iPad/.test(ua) ? "iPadOS" : "iOS";
-    osVersion = iosMatch[1].replace(/_/g, ".");
-  } else if (winMatch) {
-    os = "Windows";
-    const ntMap = {"10.0":"10/11","6.3":"8.1","6.2":"8","6.1":"7"};
-    osVersion = ntMap[winMatch[1]] || winMatch[1];
-  } else if (/Macintosh/.test(ua)) {
-    os = "macOS";
-    const macMatch = ua.match(/Mac OS X (\d+[_\.]\d+)/);
-    if (macMatch) osVersion = macMatch[1].replace(/_/g, ".");
-  } else if (/Linux/.test(ua)) {
-    os = "Linux";
-  }
-
-  // ── Browser + versione ────────────────────────────────────────────────
-  let browser = "Sconosciuto";
-  let browserVersion = "";
-  if (/SamsungBrowser\/([\d.]+)/.test(ua)) {
-    browser = "Samsung Browser"; browserVersion = RegExp.$1;
-  } else if (/OPR\/([\d.]+)/.test(ua)) {
-    browser = "Opera"; browserVersion = RegExp.$1;
-  } else if (/Edg\/([\d.]+)/.test(ua)) {
-    browser = "Edge"; browserVersion = RegExp.$1;
-  } else if (/Firefox\/([\d.]+)/.test(ua)) {
-    browser = "Firefox"; browserVersion = RegExp.$1;
-  } else if (/Chrome\/([\d.]+)/.test(ua)) {
-    browser = "Chrome"; browserVersion = RegExp.$1.split(".")[0];
-  } else if (/Safari\/([\d.]+)/.test(ua) && /Version\/([\d.]+)/.test(ua)) {
-    browser = "Safari"; browserVersion = ua.match(/Version\/([\d.]+)/)[1];
-  }
-
-  // ── Lingua browser ────────────────────────────────────────────────────
-  const lingua = navigator.language || navigator.userLanguage || "";
-
-  // ── Risoluzione schermo ───────────────────────────────────────────────
-  const schermo = `${screen.width}×${screen.height} (ratio ${window.devicePixelRatio || 1}x)`;
-
-  // ── Fuso orario ───────────────────────────────────────────────────────
-  const fuso = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-
-  // ── Label sintetica per il dialog admin ──────────────────────────────
-  const brandLabel = brand ? brand + " · " : "";
-  const modelLabel = modelRaw && modelRaw !== brand ? modelRaw + " · " : "";
-  const deviceInfo = `${tipo} · ${brandLabel}${modelLabel}${os}${osVersion ? " " + osVersion : ""} · ${browser}${browserVersion ? " " + browserVersion : ""}`;
-
-  return { tipo, brand, model: modelRaw, os, osVersion, browser, browserVersion,
-           lingua, schermo, fuso, deviceInfo,
-           userAgent: ua.substring(0, 250) };
+  let tipo="Desktop"; if(/iPad|Tablet/.test(ua))tipo="Tablet"; else if(/Mobi|Android|iPhone/.test(ua))tipo="Mobile";
+  let brand=""; if(/iPhone|iPad/.test(ua))brand="Apple"; else if(/Samsung/.test(ua))brand="Samsung"; else if(/OPPO/.test(ua))brand="OPPO";
+  const modelMatch=ua.match(/Android[^;]*;\s*([^)]+)\)/); const modelRaw=modelMatch?modelMatch[1].trim():"";
+  let os="Sconosciuto",osVersion="";
+  const am=ua.match(/Android (\d+(\.\d+)?)/); if(am){os="Android";osVersion=am[1];}
+  let browser="",browserVersion="";
+  if(/Chrome\/([\d.]+)/.test(ua)){browser="Chrome";browserVersion=RegExp.$1.split(".")[0];}
+  else if(/Safari/.test(ua)){browser="Safari";}
+  const lingua=navigator.language||""; const schermo=`${screen.width}×${screen.height}`; const fuso=Intl.DateTimeFormat().resolvedOptions().timeZone||"";
+  const deviceInfo=`${tipo}·${brand}·${os}${osVersion}·${browser}${browserVersion}`;
+  return{tipo,brand,model:modelRaw,os,osVersion,browser,browserVersion,lingua,schermo,fuso,deviceInfo,userAgent:ua.substring(0,250)};
 }
-
 async function trackLinkOpen() {
-  const info = buildDeviceInfo();
-  const fields = {};
-  for (const [k, v] of Object.entries(info)) {
-    fields[k] = { stringValue: v };
-  }
-  fields["entrata"] = { stringValue: new Date().toISOString() };
-  fields["uscita"]  = { nullValue: null };
-
-  try {
-    await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fields })
-    });
-  } catch (e) {
-    console.warn("Tracciamento entrata fallito:", e);
-  }
+  const info=buildDeviceInfo(); const fields={};
+  for(const[k,v]of Object.entries(info))fields[k]={stringValue:v};
+  fields["entrata"]={stringValue:new Date().toISOString()}; fields["uscita"]={nullValue:null};
+  try{await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields})});}catch(e){}
 }
-
 async function trackLinkClose() {
-  try {
-    await fetch(
-      `${FIRESTORE_BASE}/accessi/link/aperture/${visitId}?updateMask.fieldPaths=uscita`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: { uscita: { stringValue: new Date().toISOString() } } }),
-        keepalive: true   // funziona anche a pagina chiusa
-      }
-    );
-  } catch (e) {
-    console.warn("Tracciamento uscita fallito:", e);
-  }
+  try{await fetch(`${FIRESTORE_BASE}/accessi/link/aperture/${visitId}?updateMask.fieldPaths=uscita`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:{uscita:{stringValue:new Date().toISOString()}}}),keepalive:true});}catch(e){}
 }
-
-// Chiusura/cambio tab
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") trackLinkClose();
-});
-// Più affidabile su iOS Safari
-window.addEventListener("pagehide", () => trackLinkClose());
-
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")trackLinkClose();});
+window.addEventListener("pagehide",()=>trackLinkClose());
 trackLinkOpen();
-// ──────────────────────────────────────────────────────────────────────────
 
-// ── FUOCHI D'ARTIFICIO ────────────────────────────────────────────────────
-const canvas = document.getElementById("fireworksCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+// ── CANVAS SCENA (persone + luna + stelle) ────────────────
+const sceneCanvas = document.getElementById("sceneCanvas");
+const sc = sceneCanvas.getContext("2d");
+sceneCanvas.width = window.innerWidth;
+sceneCanvas.height = window.innerHeight;
+window.addEventListener("resize",()=>{
+  sceneCanvas.width=window.innerWidth; sceneCanvas.height=window.innerHeight;
+  heliCanvas.width=window.innerWidth; heliCanvas.height=window.innerHeight;
+  fwCanvas.width=window.innerWidth; fwCanvas.height=window.innerHeight;
 });
 
-const particles = [];
-const colors = ["#FF6B9D","#FFD700","#00BFFF","#FF4500","#ADFF2F","#FF69B4","#FFF"];
+const stars=[];
+for(let i=0;i<120;i++) stars.push({x:Math.random(),y:Math.random()*0.55,a:Math.random(),s:Math.random()*0.02+0.005,p:Math.random()*Math.PI*2});
+let sceneTime=0;
 
-function spawnBurst() {
-  const cx = Math.random() * canvas.width;
-  const cy = Math.random() * canvas.height * 0.6;
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  for (let i = 0; i < 70; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 8 + 2;
-    particles.push({
-      x: cx, y: cy,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      alpha: 1, color,
-      radius: Math.random() * 3 + 1
-    });
+function drawScene(){
+  const W=sceneCanvas.width, H=sceneCanvas.height;
+  // Cielo
+  const grad=sc.createLinearGradient(0,0,0,H*0.75);
+  grad.addColorStop(0,"#050D1A"); grad.addColorStop(1,"#0A1F3D");
+  sc.fillStyle=grad; sc.fillRect(0,0,W,H);
+  // Stelle
+  stars.forEach(s=>{
+    s.p+=s.s; const a=0.3+0.7*((Math.sin(s.p)+1)/2);
+    sc.globalAlpha=a; sc.fillStyle="#FFFFFF";
+    sc.beginPath(); sc.arc(s.x*W,s.y*H,1.2,0,Math.PI*2); sc.fill();
+  });
+  sc.globalAlpha=1;
+  // Luna
+  const mx=W*0.72, my=H*0.13, mr=W*0.09;
+  sc.fillStyle="rgba(255,245,204,0.15)"; sc.beginPath(); sc.arc(mx,my,mr*2.2,0,Math.PI*2); sc.fill();
+  sc.fillStyle="#FFF5CC"; sc.beginPath(); sc.arc(mx,my,mr,0,Math.PI*2); sc.fill();
+  sc.fillStyle="rgba(5,13,26,0.73)"; sc.beginPath(); sc.arc(mx+mr*0.28,my,mr*0.82,0,Math.PI*2); sc.fill();
+  // Acqua
+  const waterY=H*0.82;
+  const wg=sc.createLinearGradient(0,waterY,0,H);
+  wg.addColorStop(0,"#051020"); wg.addColorStop(1,"#0A2040");
+  sc.fillStyle=wg; sc.fillRect(0,waterY,W,H-waterY);
+  // Onde
+  sc.strokeStyle="rgba(170,221,255,0.25)"; sc.lineWidth=1.5;
+  for(let l=0;l<3;l++){
+    sc.beginPath();
+    for(let x=0;x<W;x+=4){
+      const y=waterY+l*H*0.025+Math.sin((x+sceneTime*15+l*40)*0.025)*3;
+      l===0&&x===0?sc.moveTo(x,y):sc.lineTo(x,y);
+    }
+    sc.stroke();
+  }
+  // Scoglio
+  const rockTop=waterY-H*0.18;
+  sc.fillStyle="#2A2A2A";
+  sc.beginPath();
+  sc.moveTo(W*0.12,waterY); sc.lineTo(W*0.18,rockTop+H*0.04); sc.lineTo(W*0.35,rockTop);
+  sc.lineTo(W*0.65,rockTop); sc.lineTo(W*0.82,rockTop+H*0.04); sc.lineTo(W*0.88,waterY); sc.closePath(); sc.fill();
+  sc.fillStyle="#3A3A3A";
+  sc.beginPath();
+  sc.moveTo(W*0.18,waterY-H*0.01); sc.lineTo(W*0.22,rockTop+H*0.06); sc.lineTo(W*0.35,rockTop+H*0.02);
+  sc.lineTo(W*0.65,rockTop+H*0.02); sc.lineTo(W*0.78,rockTop+H*0.06); sc.lineTo(W*0.82,waterY-H*0.01); sc.closePath(); sc.fill();
+  // Scogli laterali
+  sc.fillStyle="#222";
+  sc.beginPath(); sc.moveTo(0,waterY); sc.lineTo(W*0.04,waterY-H*0.07); sc.lineTo(W*0.16,waterY-H*0.05); sc.lineTo(W*0.16,waterY); sc.closePath(); sc.fill();
+  sc.beginPath(); sc.moveTo(W*0.84,waterY); sc.lineTo(W*0.84,waterY-H*0.05); sc.lineTo(W*0.96,waterY-H*0.07); sc.lineTo(W,waterY); sc.closePath(); sc.fill();
+  // Personaggi pixel
+  const seatY=rockTop+H*0.12;
+  const P=Math.max(5,W*0.018);
+  drawMale(W*0.37,seatY,P);
+  drawFemale(W*0.53,seatY,P);
+}
+
+function drawMale(x,y,P){
+  // Gambe
+  sc.fillStyle="#111"; sc.fillRect(x,y+P*10,x+P*5-x,P*3); // coscia
+  sc.fillRect(x-P,y+P*12,P*4,P*3);
+  sc.fillRect(x+P*5,y+P*12,P*4,P*3);
+  // Corpo
+  sc.fillRect(x,y+P*4,P*10,P*7);
+  // Colletto
+  sc.fillStyle="#FFF"; sc.fillRect(x+P*3.5,y+P*3.5,P,P*1.5); sc.fillRect(x+P*5.5,y+P*3.5,P,P*1.5);
+  // Braccia
+  sc.fillStyle="#111"; sc.fillRect(x-P*2,y+P*4,P*2.5,P*6);
+  sc.fillRect(x+P*9.5,y+P*4,P*2.5,P*5);
+  sc.fillStyle="#F0C8A0"; sc.fillRect(x-P*2,y+P*9.5,P*2.5,P*1.5);
+  sc.fillRect(x+P*9.5,y+P*8.5,P*2.5,P*1.5);
+  // Collo
+  sc.fillStyle="#F0C8A0"; sc.fillRect(x+P*4,y+P*2.5,P*2,P*2);
+  // Testa
+  sc.fillStyle="#2A1A0A"; sc.fillRect(x+P,y-P*3.5,P*8,P*4); sc.fillRect(x,y-P*2,P*2,P*2); sc.fillRect(x+P*8,y-P*2,P*2,P*2);
+  sc.fillStyle="#F0C8A0"; sc.fillRect(x+P*1.5,y-P*2.5,P*7,P*5);
+  sc.fillStyle="#111"; sc.fillRect(x+P*2.5,y-P*0.5,P*1.5,P*1.3); sc.fillRect(x+P*6,y-P*0.5,P*1.5,P*1.3);
+  sc.fillStyle="#C07060"; sc.fillRect(x+P*3.5,y+P*1.5,P*3,P*0.5);
+}
+
+function drawFemale(x,y,P){
+  // Gonna
+  sc.fillStyle="#111"; sc.fillRect(x-P*2,y+P*9,P*12,P*6);
+  // Corpo
+  sc.fillRect(x,y+P*4,P*8,P*6);
+  // Braccia
+  sc.fillRect(x-P*2,y+P*4,P*2.5,P*5); sc.fillRect(x+P*7.5,y+P*4,P*2.5,P*5);
+  sc.fillStyle="#F0C8A0"; sc.fillRect(x-P*2,y+P*8.5,P*2.5,P*1.5); sc.fillRect(x+P*7.5,y+P*8.5,P*2.5,P*1.5);
+  // Collo
+  sc.fillStyle="#F0C8A0"; sc.fillRect(x+P*3,y+P*2.5,P*2,P*2);
+  // Capelli
+  sc.fillStyle="#1A1A1A"; sc.fillRect(x,y-P*4,P*8,P*5); sc.fillRect(x-P,y-P*3,P*2,P*7); sc.fillRect(x+P*7,y-P*3,P*2,P*7);
+  // Faccia
+  sc.fillStyle="#F0C8A0"; sc.fillRect(x+P,y-P*3,P*6,P*5);
+  // Ciglia
+  sc.fillStyle="#1A1A1A"; sc.fillRect(x+P,y-P*1.2,P*2.5,P*0.5); sc.fillRect(x+P*4.5,y-P*1.2,P*2.5,P*0.5);
+  // Occhi
+  sc.fillRect(x+P*2,y-P*0.8,P*1.5,P*1.3); sc.fillRect(x+P*4.5,y-P*0.8,P*1.5,P*1.3);
+  // Bocca
+  sc.fillStyle="#E07080"; sc.fillRect(x+P*3,y+P,P*2,P*0.5);
+}
+
+function sceneLoop(){ sceneTime+=0.016; drawScene(); requestAnimationFrame(sceneLoop); }
+sceneLoop();
+
+// ── ELICOTTERO ────────────────────────────────────────────
+const heliCanvas = document.getElementById("helicopterCanvas");
+const hc = heliCanvas.getContext("2d");
+heliCanvas.width=window.innerWidth; heliCanvas.height=window.innerHeight;
+let heliX=-500, heliTime=0, heliAnim=null;
+
+function drawHelicopter(x,y,t){
+  const hc2=hc;
+  // Rotore
+  hc2.save(); hc2.translate(x,y-28); hc2.rotate(t*15);
+  hc2.strokeStyle="#CCC"; hc2.lineWidth=3;
+  hc2.beginPath(); hc2.moveTo(-48,0); hc2.lineTo(48,0); hc2.stroke();
+  hc2.restore();
+  // Corpo
+  hc2.fillStyle="#E8E8E8";
+  hc2.beginPath(); hc2.moveTo(x-50,y); hc2.bezierCurveTo(x-50,y-22,x-20,y-28,x+10,y-22); hc2.bezierCurveTo(x+30,y-18,x+50,y-8,x+45,y+12); hc2.bezierCurveTo(x+30,y+22,x-30,y+22,x-50,y); hc2.fill();
+  // Vetro
+  hc2.fillStyle="rgba(170,221,255,0.5)";
+  hc2.beginPath(); hc2.moveTo(x-30,y-2); hc2.bezierCurveTo(x-30,y-18,x-5,y-22,x+10,y-16); hc2.bezierCurveTo(x+18,y-10,x+15,y-2,x,y+4); hc2.closePath(); hc2.fill();
+  // Coda
+  hc2.fillStyle="#DDD";
+  hc2.beginPath(); hc2.moveTo(x+40,y+4); hc2.lineTo(x+100,y-14); hc2.lineTo(x+100,y+2); hc2.lineTo(x+40,y+14); hc2.closePath(); hc2.fill();
+  // Rotore coda
+  hc2.save(); hc2.translate(x+100,y-8); hc2.rotate(t*20);
+  hc2.strokeStyle="#BBB"; hc2.lineWidth=2;
+  hc2.beginPath(); hc2.moveTo(0,-14); hc2.lineTo(0,14); hc2.moveTo(-12,0); hc2.lineTo(12,0); hc2.stroke();
+  hc2.restore();
+  // Pattini
+  hc2.strokeStyle="#999"; hc2.lineWidth=2.5;
+  hc2.beginPath(); hc2.moveTo(x-35,y+22); hc2.lineTo(x+20,y+22); hc2.stroke();
+  hc2.beginPath(); hc2.moveTo(x-25,y+14); hc2.lineTo(x-25,y+22); hc2.stroke();
+  hc2.beginPath(); hc2.moveTo(x+5,y+14); hc2.lineTo(x+5,y+22); hc2.stroke();
+  // Filo banner
+  hc2.strokeStyle="#888"; hc2.lineWidth=1.5;
+  hc2.beginPath(); hc2.moveTo(x-10,y+22); hc2.lineTo(x-40,y+70); hc2.stroke();
+  // Banner
+  const bx=x-300, by=y+70, bw=260, bh=44;
+  const wave=Math.sin(t*2)*5;
+  hc2.fillStyle="rgba(0,0,0,0.2)"; hc2.fillRect(bx+4,by+4+wave,bw,bh);
+  hc2.fillStyle="#FFF8F0"; hc2.fillRect(bx,by+wave,bw,bh);
+  hc2.strokeStyle="#CC0000"; hc2.lineWidth=2;
+  hc2.strokeRect(bx,by+wave,bw,bh);
+  hc2.fillStyle="#DD0000"; hc2.fillRect(bx,by+wave,8,bh); hc2.fillRect(bx+bw-8,by+wave,8,bh);
+  hc2.fillStyle="#1A1A1A"; hc2.font="bold 15px Georgia";
+  hc2.textAlign="center";
+  hc2.fillText(CONFIG.bannerText,bx+bw/2,by+bh/2+6+wave);
+  hc2.textAlign="left";
+}
+
+function startHelicopter(onDone){
+  heliCanvas.style.display="block";
+  heliX=-500; heliTime=0;
+  let start=null;
+  const duration=6000;
+  function frame(ts){
+    if(!start)start=ts;
+    const elapsed=ts-start;
+    heliTime=elapsed/1000;
+    const W=heliCanvas.width;
+    heliX=-500+(W+1000)*(elapsed/duration);
+    hc.clearRect(0,0,heliCanvas.width,heliCanvas.height);
+    const hy=heliCanvas.height*0.22+Math.sin(heliTime*3)*8;
+    drawHelicopter(heliX,hy,heliTime);
+    if(elapsed<duration) requestAnimationFrame(frame);
+    else { hc.clearRect(0,0,heliCanvas.width,heliCanvas.height); heliCanvas.style.display="none"; onDone(); }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ── FUOCHI D'ARTIFICIO ────────────────────────────────────
+const fwCanvas = document.getElementById("fireworksCanvas");
+const fctx = fwCanvas.getContext("2d");
+fwCanvas.width=window.innerWidth; fwCanvas.height=window.innerHeight;
+const fwParticles=[];
+const fwColors=["#FFD700","#00BFFF","#ADFF2F","#FF69B4","#FFF","#ADD8E6","#DA70D6","#FFD700"];
+
+function spawnBurst(){
+  const cx=Math.random()*fwCanvas.width;
+  const cy=Math.random()*fwCanvas.height*0.6;
+  const color=fwColors[Math.floor(Math.random()*fwColors.length)];
+  for(let i=0;i<70;i++){
+    const angle=Math.random()*Math.PI*2, speed=Math.random()*8+2;
+    fwParticles.push({x:cx,y:cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,alpha:1,color,radius:Math.random()*3+1});
   }
 }
 
-function animateFireworks() {
-  ctx.fillStyle = "rgba(10,22,40,0.18)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx; p.y += p.vy + 0.2;
-    p.alpha -= 0.013;
-    if (p.alpha <= 0) { particles.splice(i, 1); continue; }
-    ctx.globalAlpha = p.alpha;
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    ctx.fill();
+let fwRunning=false;
+function animateFireworks(){
+  if(!fwRunning)return;
+  fctx.fillStyle="rgba(10,22,40,0.18)";
+  fctx.fillRect(0,0,fwCanvas.width,fwCanvas.height);
+  for(let i=fwParticles.length-1;i>=0;i--){
+    const p=fwParticles[i];
+    p.x+=p.vx; p.y+=p.vy+0.2; p.alpha-=0.013;
+    if(p.alpha<=0){fwParticles.splice(i,1);continue;}
+    fctx.globalAlpha=p.alpha; fctx.fillStyle=p.color;
+    fctx.beginPath(); fctx.arc(p.x,p.y,p.radius,0,Math.PI*2); fctx.fill();
   }
-  ctx.globalAlpha = 1;
-  if (Math.random() < 0.04) spawnBurst();
+  fctx.globalAlpha=1;
+  if(Math.random()<0.05)spawnBurst();
   requestAnimationFrame(animateFireworks);
 }
-for (let i = 0; i < 5; i++) spawnBurst();
-animateFireworks();
 
-// ── BUSTA ─────────────────────────────────────────────────────────────────
-function openEnvelope() {
-  const flap = document.getElementById("envelopeFlap");
-  const heart = document.getElementById("heartIcon");
-  const hint = document.getElementById("envelopeHint");
-  flap.style.transition = "transform 0.6s ease";
-  flap.style.transformOrigin = "110px 48px";
-  flap.style.transform = "scaleY(-1)";
-  heart.style.transition = "opacity 0.3s";
-  heart.style.opacity = "0";
-  hint.textContent = "Apertura in corso...";
-  setTimeout(() => {
-    document.getElementById("envelopeSection").style.display = "none";
-    const ls = document.getElementById("letterSection");
-    ls.style.display = "flex";
-    ls.classList.add("visible");
-    window.scrollTo({ top: document.getElementById("page2").offsetTop, behavior: "smooth" });
-  }, 800);
+function startFireworks(){
+  fwCanvas.style.display="block"; fwRunning=true;
+  for(let i=0;i<5;i++)spawnBurst();
+  animateFireworks();
 }
 
-// ── CANZONI ───────────────────────────────────────────────────────────────
-let currentAudio = null;
-let currentBtn = null;
+// ── NUVOLETTE FUMETTO ─────────────────────────────────────
+const bubbleLeft=document.getElementById("bubbleLeft");
+const bubbleRight=document.getElementById("bubbleRight");
+let typingTimer=null;
 
-function loadSongs() {
-  const container = document.getElementById("songsContainer");
-  if (CONFIG.songs.length === 0) return;
-  document.getElementById("noSongs")?.remove();
-  CONFIG.songs.forEach((song, i) => {
-    const row = document.createElement("div");
-    row.className = "song-row";
-    row.innerHTML = `
-      <div class="song-info">
-        <div class="song-title">${song.title}</div>
-        <div class="song-artist">${song.artist}</div>
-      </div>
-      <button class="play-btn" id="playBtn${i}" onclick="togglePlay(${i})">▶</button>
-    `;
-    container.appendChild(row);
+function showBubble(text, isMe, onDone){
+  const bubble = isMe ? bubbleLeft : bubbleRight;
+  const other  = isMe ? bubbleRight : bubbleLeft;
+  other.style.display="none";
+  bubble.textContent="";
+  bubble.style.display="block";
+  bubble.style.opacity="0";
+  bubble.style.transition="opacity 0.2s";
+  setTimeout(()=>bubble.style.opacity="1",20);
+  let i=0;
+  const delay=55;
+  if(typingTimer)clearInterval(typingTimer);
+  typingTimer=setInterval(()=>{
+    i++;
+    bubble.textContent=text.substring(0,i);
+    if(i>=text.length){
+      clearInterval(typingTimer);
+      const pause=text.length<10?1800:text.length<20?2200:2800;
+      setTimeout(onDone,pause);
+    }
+  },delay);
+}
+
+function hideBubbles(onDone){
+  bubbleLeft.style.transition="opacity 0.3s"; bubbleLeft.style.opacity="0";
+  bubbleRight.style.transition="opacity 0.3s"; bubbleRight.style.opacity="0";
+  setTimeout(()=>{ bubbleLeft.style.display="none"; bubbleRight.style.display="none"; onDone(); },350);
+}
+
+// ── CHAT MESSAGES ─────────────────────────────────────────
+const chatMessages=[
+  ["Amore...",true],
+  ["Dimmi...",false],
+  ["Oggi siamo un anno",true],
+  ["Alti e bassi insieme...",true],
+  ["Oggi ci siamo messi insieme",true],
+  ["Sì...",false],
+  ["Volevo dirti che...",true],
+  ["Ti amo tantissimo",true],
+  ["Sei la mia vita",true],
+  ["Darei la vita per te",true],
+  ["Siamo giovani lo so...",true],
+  ["Ma sei l'amore mio",true],
+  ["Ricordi con zia?",true],
+  ["Voglio altri anni con te",true],
+  ["Ti ho fatto un regalo...",true],
+  ["Spero ti piaccia",true]
+];
+const chatMessages2=[
+  ["Amore...",true],
+  ["Ti ricordi l'elicottero?",true],
+  ["Quello con la striscia...",true],
+  ["Ho fatto qualcosa di più virtuale",true]
+];
+
+function runChat(messages,index,onDone){
+  if(index>=messages.length){ hideBubbles(onDone); return; }
+  const[text,isMe]=messages[index];
+  showBubble(text,isMe,()=>runChat(messages,index+1,onDone));
+}
+
+// ── TESTO DORATO ──────────────────────────────────────────
+function showWish(onDone){
+  const el=document.getElementById("wishText");
+  el.style.display="block";
+  el.style.opacity="0";
+  el.style.transform="scale(0.7) translateY(-20px)";
+  el.style.transition="opacity 1.4s ease, transform 1.4s ease";
+  setTimeout(()=>{ el.style.opacity="1"; el.style.transform="scale(1) translateY(0)"; },50);
+  // Pulsazione dopo 1.5s
+  setTimeout(()=>{
+    let scale=1, dir=1;
+    setInterval(()=>{ scale+=dir*0.002; if(scale>1.05||scale<1)dir*=-1; el.style.transform=`scale(${scale})`; },16);
+    if(onDone)onDone();
+  },1600);
+}
+
+// ── STELLA FINALE ─────────────────────────────────────────
+function showStar(){
+  const el=document.getElementById("scrollHint");
+  el.textContent="✨"; el.style.fontSize="32px"; el.style.color="#FFD700"; el.style.display="block";
+  let s=1,d=1;
+  setInterval(()=>{ s+=d*0.01; if(s>1.3||s<1)d*=-1; el.style.transform=`scale(${s})`; },30);
+  // Riabilita scroll
+  document.body.style.overflow="";
+}
+
+// ── SEQUENZA PRINCIPALE ───────────────────────────────────
+document.body.style.overflow="hidden"; // blocca scroll durante sequenza
+
+function startSequence(){
+  // 1. Chat iniziale
+  runChat(chatMessages,0,()=>{
+    // 2. Elicottero
+    setTimeout(()=>{
+      startHelicopter(()=>{
+        // 3. Fuochi
+        startFireworks();
+        // 4. Testo dorato dopo 2.5s
+        setTimeout(()=>{
+          showWish(()=>{
+            // 5. Chat finale dopo altri 4s
+            setTimeout(()=>{
+              runChat(chatMessages2,0,()=>{
+                // 6. Stella + scroll
+                showStar();
+              });
+            },4000);
+          });
+        },2500);
+      });
+    },600);
   });
 }
 
-function togglePlay(index) {
-  const btn = document.getElementById(`playBtn${index}`);
-  if (currentAudio && currentBtn === btn) {
-    if (currentAudio.paused) {
-      currentAudio.play(); btn.textContent = "⏸"; btn.classList.add("playing");
-    } else {
-      currentAudio.pause(); btn.textContent = "▶"; btn.classList.remove("playing");
-    }
+// Parte dopo 1.2 secondi dall'apertura
+setTimeout(startSequence, 1200);
+
+// ── BUSTA ─────────────────────────────────────────────────
+function openEnvelope(){
+  document.getElementById("envelopeSection").style.display="none";
+  const ls=document.getElementById("letterSection");
+  ls.style.display="flex"; ls.classList.add("visible");
+  window.scrollTo({top:document.getElementById("page2").offsetTop,behavior:"smooth"});
+}
+
+// ── CANZONI ───────────────────────────────────────────────
+let currentAudio=null, currentBtn=null;
+function loadSongs(){
+  const c=document.getElementById("songsContainer");
+  if(CONFIG.songs.length===0)return;
+  document.getElementById("noSongs")?.remove();
+  CONFIG.songs.forEach((song,i)=>{
+    const row=document.createElement("div"); row.className="song-row";
+    row.innerHTML=`<div class="song-info"><div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div></div><button class="play-btn" id="playBtn${i}" onclick="togglePlay(${i})">▶</button>`;
+    c.appendChild(row);
+  });
+}
+function togglePlay(i){
+  const btn=document.getElementById(`playBtn${i}`);
+  if(currentAudio&&currentBtn===btn){
+    if(currentAudio.paused){currentAudio.play();btn.textContent="⏸";btn.classList.add("playing");}
+    else{currentAudio.pause();btn.textContent="▶";btn.classList.remove("playing");}
     return;
   }
-  if (currentAudio) {
-    currentAudio.pause(); currentBtn.textContent = "▶"; currentBtn.classList.remove("playing");
-  }
-  currentAudio = new Audio(CONFIG.songs[index].url);
-  currentBtn = btn;
-  currentAudio.play();
-  btn.textContent = "⏸"; btn.classList.add("playing");
-  currentAudio.onended = () => { btn.textContent = "▶"; btn.classList.remove("playing"); };
+  if(currentAudio){currentAudio.pause();currentBtn.textContent="▶";currentBtn.classList.remove("playing");}
+  currentAudio=new Audio(CONFIG.songs[i].url); currentBtn=btn;
+  currentAudio.play(); btn.textContent="⏸"; btn.classList.add("playing");
+  currentAudio.onended=()=>{btn.textContent="▶";btn.classList.remove("playing");};
 }
 
-// ── FOTO ──────────────────────────────────────────────────────────────────
-function loadPhotos() {
-  const grid = document.getElementById("photoGrid");
-  if (CONFIG.photos.length === 0) return;
+// ── FOTO ──────────────────────────────────────────────────
+function loadPhotos(){
+  const g=document.getElementById("photoGrid");
+  if(CONFIG.photos.length===0)return;
   document.getElementById("noPhotos")?.remove();
-  CONFIG.photos.forEach(url => {
-    const img = document.createElement("img");
-    img.src = url; img.alt = "Foto";
-    grid.appendChild(img);
-  });
+  CONFIG.photos.forEach(url=>{const img=document.createElement("img");img.src=url;img.alt="Foto";g.appendChild(img);});
 }
 
-loadSongs();
-loadPhotos();
+loadSongs(); loadPhotos();
 </script>
 </body>
 </html>
