@@ -27,49 +27,56 @@ body {
   text-align: center;
   box-shadow: 0 20px 60px rgba(0,0,0,0.4);
 }
-.logo {
-  width: 80px; height: 80px;
-  background: linear-gradient(135deg, #6750A4 0%, #9C27B0 100%);
-  border-radius: 20px;
-  margin: 0 auto 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  box-shadow: 0 10px 30px rgba(103, 80, 164, 0.4);
-}
-h1 {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.subtitle {
-  color: #AAA;
-  font-size: 14px;
-  margin-bottom: 32px;
-}
+
+/* ── Avatar grande con foto profilo o iniziali ── */
 .avatar {
-  width: 72px; height: 72px;
+  width: 110px; height: 110px;
   background: linear-gradient(135deg, #6750A4 0%, #9C27B0 100%);
   border-radius: 50%;
-  margin: 0 auto 12px;
+  margin: 0 auto 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 42px;
   font-weight: bold;
   color: white;
+  overflow: hidden;
+  border: 3px solid rgba(255,255,255,0.15);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
-.username {
-  font-size: 18px;
-  font-weight: 600;
+.avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+/* ── Nome grande ── */
+.displayName {
+  font-size: 26px;
+  font-weight: 700;
   margin-bottom: 4px;
 }
+
+/* ── Username piccolo ── */
 .handle {
   color: #888;
   font-size: 14px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
+
+/* ── Frase invito ── */
+.inviteText {
+  color: #DDD;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+/* ── Sottotitolo ── */
+.subtitle {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 28px;
+}
+
 .btn {
   display: block;
   width: 100%;
@@ -90,11 +97,7 @@ h1 {
   box-shadow: 0 8px 24px rgba(103, 80, 164, 0.4);
 }
 .btn-primary:hover { box-shadow: 0 12px 32px rgba(103, 80, 164, 0.5); }
-.btn-secondary {
-  background: rgba(255,255,255,0.08);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.15);
-}
+
 .divider {
   height: 1px;
   background: rgba(255,255,255,0.1);
@@ -117,13 +120,12 @@ h1 {
 <body>
 
 <div class="card">
-  <div class="logo">📱</div>
-  <h1>Vuoi aggiungere un amico?</h1>
-  <p class="subtitle">Scarica MyApp per continuare</p>
-
   <div class="avatar" id="avatar">?</div>
-  <div class="username" id="displayName">Caricamento...</div>
+  <div class="displayName" id="displayName">Caricamento...</div>
   <div class="handle" id="handle">@username</div>
+
+  <div class="inviteText">Ti vuole invitare ad essere suo amico</div>
+  <div class="subtitle">Scarica MyApp per continuare</div>
 
   <a href="#" id="downloadBtn" class="btn btn-primary">
     ⬇️ Scarica MyApp
@@ -143,7 +145,6 @@ h1 {
 </div>
 
 <script>
-// Estrai username dal parametro URL ?u=username
 const params = new URLSearchParams(window.location.search);
 const username = (params.get("u") || "").trim();
 
@@ -152,7 +153,6 @@ if (username) {
   document.getElementById("searchName").textContent = "@" + username;
   document.getElementById("avatar").textContent = username.charAt(0).toUpperCase();
 
-  // Carica nome reale da Firestore
   fetch(`https://firestore.googleapis.com/v1/projects/myapp-a9500/databases/(default)/documents:runQuery`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -173,17 +173,28 @@ if (username) {
   .then(r => r.json())
   .then(data => {
     if (data && data[0] && data[0].document) {
-      const fields = data[0].document.fields;
+      const fields  = data[0].document.fields;
       const nome    = fields.nome?.stringValue || "";
       const cognome = fields.cognome?.stringValue || "";
       const color   = fields.avatarColor?.stringValue || "#6750A4";
+      const photo   = fields.photoUrl?.stringValue || "";
       const full    = `${nome} ${cognome}`.trim();
 
+      // Nome
       if (full) document.getElementById("displayName").textContent = full;
       else      document.getElementById("displayName").textContent = "@" + username;
 
-      // Imposta colore avatar
-      document.getElementById("avatar").style.background = color;
+      // Avatar: foto profilo se c'è, altrimenti iniziali + colore
+      const avatarEl = document.getElementById("avatar");
+      if (photo) {
+        avatarEl.innerHTML = `<img src="${photo}" alt="${full}" onerror="this.parentElement.textContent='${username.charAt(0).toUpperCase()}'">`;
+      } else {
+        avatarEl.style.background = color;
+        const initials = full
+          ? full.split(" ").filter(w => w).slice(0, 2).map(w => w.charAt(0).toUpperCase()).join("")
+          : username.charAt(0).toUpperCase();
+        avatarEl.textContent = initials;
+      }
     } else {
       document.getElementById("displayName").textContent = "@" + username;
     }
@@ -197,11 +208,8 @@ if (username) {
   document.getElementById("handle").textContent = "";
 }
 
-// Link di download — PER ORA placeholder
-// Quando carichi l'APK su GitHub Releases, sostituisci con:
-// https://github.com/piehector1502-blip/MyApp/releases/latest/download/app-release.apk
 document.getElementById("downloadBtn").href =
-  "https://github.com/piehector1502-blip/MyApp/releases/latest";
+  "https://github.com/piehector1502-blip/MyApp/releases/latest/download/app-release.apk";
 </script>
 
 </body>
